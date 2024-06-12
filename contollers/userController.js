@@ -12,38 +12,36 @@ const verifyToken = require('../middleware/VerifyJWT');
 // Signup route for user registration
 router.post('/signup', async (req, res, next) => {
     try {
-
         let newUser = req.body;
 
         // Check if the username already exists
         const existingUser = await db.User.findOne({ username: newUser.username});
 
         if (existingUser) {
-            return res.json({ error: "Username already exists" });
-        }else{
+            console.log('in back')
+            return res.status(400).json({ message: "Username already exists" });
+        };
 
-            // Hash the password before saving the user
-            newUser.password  = bcrypt.hashSync(newUser.password, bcrypt.genSaltSync(10));
-        
-            const createUser = new db.User(newUser);
-            await createUser.save();
+        // Hash the password before saving the user
+        newUser.password  = bcrypt.hashSync(newUser.password, bcrypt.genSaltSync(10));
     
-            // Create a token for the new user
-            const token = createToken(createUser._id)
-            let username = createUser.username
+        const createUser = new db.User(newUser);
+        await createUser.save();
 
-            console.log(token)
-    
-            res.cookie("token", token, {
-                withCredentials: true,
-                httpOnly: false,
-            })
-    
-            res.status(201).json({ message: "User signed up successfully", success: true, token, username });
-    
-            next();
-        }
-  
+        // Create a token for the new user
+        const token = createToken(createUser._id)
+        let username = createUser.username
+
+        console.log(token)
+
+        res.cookie("token", token, {
+            withCredentials: true,
+            httpOnly: false,
+        })
+
+        res.status(201).json({ message: "User signed up successfully", success: true, token, username });
+
+        next();
 
     } catch (error) {
         console.error(error);
@@ -57,38 +55,39 @@ router.post('/login', async (req, res, next) => {
 
         // Check if both username and password are provided
         if(!userLogin.username || !userLogin.password ){
-            return res.json({message:'All fields are required'})
-        } else {
-            const user = await db.User.findOne({username: userLogin.username});
+            return res.json({message:'All fields are required'});
 
-             // Check if user exists in the database
-            if(!user) {
-                console.log(`Could not find this user in the database: User with username ${userLogin.username}`);
-            }else {
-                // Compare provided password with stored hash
-                const auth = await bcrypt.compare(userLogin.password, user.password);
+        }
 
-                if (!auth) {
-                    console.log(`The password credentials shared did not match the credentials for the user with username ${user.username}`);
-                }else {
-                    // make a token
-                    const token = createToken(user._id)
-                    let username = user.username
+        const user = await db.User.findOne({username: userLogin.username});
 
-                    console.log("token from login route = ", token)
+            // Check if user exists in the database
+        if(!user) {
+            // console.log(`Could not find this user in the database: User with username ${userLogin.username}`);
+            return res.status(400).json({ message: `Could not find ${userLogin.username} in the database` });
+        }
 
-                    res.cookie("token", token, {
-                        httpOnly: true,
-                        withCredentials: true,
-                    })
-                    res
-                    .status(201)
-                    .json({ message: "User signed in successfully", success: true, token, username });
+        // Compare provided password with stored hash
+        const auth = await bcrypt.compare(userLogin.password, user.password);
 
-                    next();
-                }
-            }
+        if (!auth) {
+            return res.status(400).json({ message: `The password did not match the for the user: ${user.username}` });
+        }else {
+            // make a token
+            const token = createToken(user._id)
+            let username = user.username
 
+            console.log("token from login route = ", token)
+
+            res.cookie("token", token, {
+                httpOnly: true,
+                withCredentials: true,
+            })
+            res
+            .status(201)
+            .json({ message: "User signed in successfully", success: true, token, username });
+
+            next();
         }
 
     } catch (error) {
@@ -118,7 +117,9 @@ router.get('/', async (req, res) => {
 })
 
 // Logout route to clear the authentication token
-router.get('/logout', (req, res) => {
+router.get('/logout', verifyToken, (req, res) => {
+    console.log('logging out')
+    res.clearCookie("token");
     res.clearCookie("token");
     res.json({ message: "Logged out" });
 });
