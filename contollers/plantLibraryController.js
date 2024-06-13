@@ -12,15 +12,9 @@ const verifyToken = require('../middleware/VerifyJWT');
 // Function to fetch a list of plants from an external API
 async function fetchPlantList(pageNum) {
 
-    const agent = new https.Agent({
-        rejectUnauthorized: false, // This will ignore SSL certificate errors
-      });      
-
+      console.log("getting data")
     // Make an API request to fetch plant data based on the provided page number
-    const plantAPIResponse = await fetch(`https://trefle.io/api/v1/plants?token=${process.env.Plant_API}&page=${pageNum}`, {
-        method: 'GET',
-        agent, // Add the agent to your fetch request
-      });
+    const plantAPIResponse = await fetch(`https://trefle.io/api/v1/plants?token=${process.env.Plant_API}&page=${pageNum}`);
 
     // Check if the API request was successful
     if (!plantAPIResponse.ok) {
@@ -43,6 +37,8 @@ async function fetchPlantList(pageNum) {
 router.get('/getplants/:pageNum', verifyToken, async (req, res) =>{
 
     try{
+
+        console.log('in backend')
 
         // Fetch plant data based on the page number
         const plantData = await fetchPlantList(req.params.pageNum);
@@ -163,6 +159,8 @@ router.get('/search/:searchTerm', verifyToken, async (req, res) =>{
 router.put('/favorites/:sName', verifyToken, async (req, res) => {
 
     try{
+
+        console.log('getting favorites')
         // Find the user's profile based on their user ID
         const userProfile = await db.UserProfile.findOne({ user: req.user._id });
 
@@ -197,6 +195,7 @@ router.put('/favorites/:sName', verifyToken, async (req, res) => {
 // Delete a plant from user's favorites
 router.delete('/favorites/:sName', verifyToken, async (req, res) => {
     try {
+
         // Find the user's profile based on their user ID
         const userProfile = await db.UserProfile.findOne({ user: req.user._id });
 
