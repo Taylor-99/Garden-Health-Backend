@@ -1,6 +1,7 @@
 
 // Load environment variables from .env file
 require('dotenv').config();
+const https = require('https');
 
 // Import required modules
 const router = require('express').Router();
@@ -11,8 +12,15 @@ const verifyToken = require('../middleware/VerifyJWT');
 // Function to fetch a list of plants from an external API
 async function fetchPlantList(pageNum) {
 
+    const agent = new https.Agent({
+        rejectUnauthorized: false, // This will ignore SSL certificate errors
+      });      
+
     // Make an API request to fetch plant data based on the provided page number
-    const plantAPIResponse = await fetch(`https://trefle.io/api/v1/plants?token=${process.env.Plant_API}&page=${pageNum}`);
+    const plantAPIResponse = await fetch(`https://trefle.io/api/v1/plants?token=${process.env.Plant_API}&page=${pageNum}`, {
+        method: 'GET',
+        agent, // Add the agent to your fetch request
+      });
 
     // Check if the API request was successful
     if (!plantAPIResponse.ok) {
