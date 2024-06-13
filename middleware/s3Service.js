@@ -4,6 +4,8 @@ const { Upload } = require("@aws-sdk/lib-storage");
 const uuid = require("uuid").v4;
 require("dotenv").config();
 
+// https://www.youtube.com/watch?v=jwp4U6v-3h4
+
 const s3Client = new S3({
     region: process.env.REGION,
     credentials: {

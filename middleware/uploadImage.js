@@ -2,6 +2,8 @@
 const multer = require("multer");
 require("dotenv").config();
 
+// https://www.youtube.com/watch?v=jwp4U6v-3h4
+
     const fileFilter = (req, file, cb) => {
         if (file.mimetype === "image/jpeg" || file.mimetype === "image/png") {
         cb(null, true);
