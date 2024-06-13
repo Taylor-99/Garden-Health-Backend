@@ -53,7 +53,6 @@ router.get('/getweather', verifyToken, async (req, res) =>{
         // Fetch user profile from the database using the user ID from the verified token
         const userProfile = await db.UserProfile.findOne({ user: req.user._id });
 
-        console.log(req.user)
         // Get the user's city from their profile
         let userCity = userProfile.city;
 
@@ -106,7 +105,6 @@ async function getOrCreateChallenge(userId) {
     // If the user has no challenges, create the first one
     if(userChallenges.length === 0){
         const firstChallenge = createChallenge(0, userId)
-        console.log('first challenge created')
         return (firstChallenge)
     }else {
 
@@ -128,13 +126,12 @@ async function getOrCreateChallenge(userId) {
     
             if (!userChallenges[c].completed) {
                 needsNewChallenge = false;
-                console.log('need to complete challenge');
                 return(userChallenges[c]);
             }
             else if(needsNewChallenge === true && !isSameDay) {
                 // If a new challenge is needed and it's a new day, create it
                 let newChallenge = await createChallenge(userChallenges.length, userId);
-                console.log("new challenge for today");
+
                 return(newChallenge);
             }else{
                 // If no new challenge is needed or it's the same day, return a message
@@ -205,7 +202,7 @@ async function checkForReminders(userID){
 
     // Retrieve all reminders and plants associated with the user
     let getReminders = await db.Reminder.find({ user: userID})
-    console.log(getReminders)
+    
     let plants = await db.Plant.find({ user: userID})
 
     // If the user has no reminders, create reminders based on predefined data

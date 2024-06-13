@@ -7,6 +7,7 @@ const router = require('express').Router();
 const db  = require('../models');
 const verifyToken = require('../middleware/VerifyJWT');
 const upload = require('../middleware/uploadImage');
+const s3Upload = require('../middleware/s3Service');
 
 // Delete route for deleting a plant by its ID
 router.delete('/:plantId', verifyToken, async (req, res) =>{
@@ -114,6 +115,11 @@ router.post('/create',verifyToken, upload.single("plantImage"), async (req, res)
 
     try {
 
+        const file = req.file;
+        const result = await s3Upload(file)
+
+        console.log("results: ", result)
+
         // Find the authenticated user
         const user = await db.User.findById(req.user._id);
 
@@ -126,7 +132,7 @@ router.post('/create',verifyToken, upload.single("plantImage"), async (req, res)
         const plantId = await createNewPlant(req.user._id, req.body);
 
 
-        let plantImage = `../uploads/${req.file.fieldname}`
+        let plantImage = result.Location
 
         // Create a new plant update for the created plant
         await createNewPlantUpdate(plantId, req.body, plantImage);
