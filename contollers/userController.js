@@ -120,7 +120,7 @@ router.get('/', async (req, res) => {
 router.get('/logout', verifyToken, (req, res) => {
     console.log('logging out')
     res.clearCookie("token");
-    res.clearCookie("token");
+    res.clearCookie("user");
     res.json({ message: "Logged out" });
 });
 

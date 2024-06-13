@@ -7,9 +7,6 @@ const db  = require('../models');
 const verifyToken = async (req, res, next) => {
 
     try {
-        // const token = req.cookies.token;
-        // let token = req.headers.authorization
-        // let extractedToken = token.slice(7);
 
         const authHeader = req.headers['authorization'];
         const token = authHeader && authHeader.split(' ')[1];

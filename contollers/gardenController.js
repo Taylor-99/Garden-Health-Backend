@@ -118,8 +118,6 @@ router.post('/create',verifyToken, upload.single("plantImage"), async (req, res)
         const file = req.file;
         const result = await s3Upload(file)
 
-        console.log("results: ", result)
-
         // Find the authenticated user
         const user = await db.User.findById(req.user._id);
 
@@ -148,11 +146,17 @@ router.post('/create',verifyToken, upload.single("plantImage"), async (req, res)
 });
 
 //Create route to update a plant
-router.post('/update/:plantId', verifyToken, async (req, res) =>{
+router.post('/update/:plantId', verifyToken, verifyToken, upload.single("plantImage"), async (req, res) =>{
 
     try {
+
+        const file = req.file;
+        const result = await s3Upload(file)
+
+        let plantImage = result.Location
+
         // Create a new plant update for the specified plant
-        await createNewPlantUpdate(req.params.plantId, req.body);
+        await createNewPlantUpdate(req.params.plantId, req.body, plantImage);
 
         // Send a success response
         return res.json({ message:'plant updated' })

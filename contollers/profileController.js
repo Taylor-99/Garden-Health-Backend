@@ -7,6 +7,8 @@ const router = require('express').Router();
 const db  = require('../models');
 
 const verifyToken = require('../middleware/VerifyJWT');
+const upload = require('../middleware/uploadImage');
+const s3Upload = require('../middleware/s3Service');
 
 // Delete - Mood and Journal Entry
 router.delete('/', async (req, res) =>{
@@ -36,10 +38,13 @@ router.delete('/', async (req, res) =>{
 });
 
 //create profile
-router.post('/createprofile', verifyToken, async (req, res) => {
+router.post('/newprofile', verifyToken, upload.single("image"),  async (req, res) => {
 
     try {
-        console.log('in backend')
+
+        const file = req.file;
+        const result = await s3Upload(file)
+
         // Find the user by ID
         const user = await db.User.findById(req.user._id);
 
@@ -55,7 +60,7 @@ router.post('/createprofile', verifyToken, async (req, res) => {
             firstName: req.body.fName,
             lastName: req.body.lName,
             username: user.username,
-            image: req.body.image,
+            image: result.Location,
             city: req.body.city,
             state: req.body.state,
             gardeningExperience: req.body.gExperience,

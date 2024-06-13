@@ -6,8 +6,9 @@ require('dotenv').config();
 const router = require('express').Router();
 const db  = require('../models');
 
-const verifyToken = require('../middleware/VerifyJWT');const { AmplifyBackend } = require('aws-sdk');
-;
+const verifyToken = require('../middleware/VerifyJWT');
+const upload = require('../middleware/uploadImage');
+const s3Upload = require('../middleware/s3Service');
 
 // Show - Posts
 router.get('/', verifyToken, async (req, res) => {
@@ -274,9 +275,13 @@ async function createPost(userId, postData, profile) {
 };
 
 // Create Post
-router.post('/create', verifyToken, async (req, res) =>{
+router.post('/create', verifyToken, upload.single("image"), async (req, res) =>{
 
     try {
+
+        const file = req.file;
+        const result = await s3Upload(file)
+
         // Find the user
         const user = await db.User.findById(req.user._id);
         const userProfile = await db.UserProfile.find ({ user: req.user._id});
@@ -284,6 +289,8 @@ router.post('/create', verifyToken, async (req, res) =>{
         if (!user) {
         return res.status(404).json({ message: "User not found" });
         }
+
+        req.body.image = result.Location
 
         // Create the post
         await createPost(req.user._id, req.body, userProfile[0]);
@@ -317,9 +324,13 @@ async function createReply(userId, postId, replyData, profile) {
 };
 
 // Create Reply
-router.post('/create/:postId', verifyToken, async (req, res) =>{
+router.post('/create/:postId', verifyToken, upload.single("image"), async (req, res) =>{
 
     try {
+
+        const file = req.file;
+        const result = await s3Upload(file)
+
         // Find the user by user ID
         const user = await db.User.findById(req.user._id);
         const userProfile = await db.UserProfile.find ({ user: req.user._id});
@@ -328,6 +339,8 @@ router.post('/create/:postId', verifyToken, async (req, res) =>{
         if (!user) {
         return res.status(404).json({ message: "User not found" });
         }
+
+        req.body.image = result.Location
 
         // Call the createReply function to create the reply
         await createReply(req.user._id, req.params.postId, req.body, userProfile[0]);
