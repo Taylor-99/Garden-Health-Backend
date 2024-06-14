@@ -16,6 +16,7 @@ async function fetchPlantList(pageNum) {
     // Make an API request to fetch plant data based on the provided page number
     const plantAPIResponse = await fetch(`https://trefle.io/api/v1/plants?token=${process.env.Plant_API}&page=${pageNum}`);
 
+    console.log("response: ", plantAPIResponse)
     // Check if the API request was successful
     if (!plantAPIResponse.ok) {
         throw new Error(`API request failed: ${plantAPIResponse.statusText}`);

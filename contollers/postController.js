@@ -339,7 +339,11 @@ router.post('/create/:postId', verifyToken, upload.single("image"), async (req, 
     try {
 
         const file = req.file;
-        const result = await s3Upload(file)
+        let imageUrl = '';
+        if (file) {
+            const result = await s3Upload(file);
+            imageUrl = result.Location;
+        }
 
         // Find the user by user ID
         const user = await db.User.findById(req.user._id);
@@ -350,7 +354,7 @@ router.post('/create/:postId', verifyToken, upload.single("image"), async (req, 
         return res.status(404).json({ message: "User not found" });
         }
 
-        req.body.image = result.Location
+        req.body.image = imageUrl
 
         // Call the createReply function to create the reply
         await createReply(req.user._id, req.params.postId, req.body, userProfile[0]);

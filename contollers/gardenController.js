@@ -116,7 +116,11 @@ router.post('/create',verifyToken, upload.single("plantImage"), async (req, res)
     try {
 
         const file = req.file;
-        const result = await s3Upload(file)
+        let imageUrl = '';
+        if (file) {
+            const result = await s3Upload(file);
+            imageUrl = result.Location;
+        }
 
         // Find the authenticated user
         const user = await db.User.findById(req.user._id);
@@ -130,7 +134,7 @@ router.post('/create',verifyToken, upload.single("plantImage"), async (req, res)
         const plantId = await createNewPlant(req.user._id, req.body);
 
 
-        let plantImage = result.Location
+        let plantImage = imageUrl
 
         // Create a new plant update for the created plant
         await createNewPlantUpdate(plantId, req.body, plantImage);
@@ -151,9 +155,13 @@ router.post('/update/:plantId', verifyToken, verifyToken, upload.single("plantIm
     try {
 
         const file = req.file;
-        const result = await s3Upload(file)
+        let imageUrl = '';
+        if (file) {
+            const result = await s3Upload(file);
+            imageUrl = result.Location;
+        }
 
-        let plantImage = result.Location
+        let plantImage = imageUrl
 
         // Create a new plant update for the specified plant
         await createNewPlantUpdate(req.params.plantId, req.body, plantImage);

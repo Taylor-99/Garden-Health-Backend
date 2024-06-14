@@ -43,7 +43,11 @@ router.post('/newprofile', verifyToken, upload.single("image"),  async (req, res
     try {
 
         const file = req.file;
-        const result = await s3Upload(file)
+        let imageUrl = '';
+        if (file) {
+            const result = await s3Upload(file);
+            imageUrl = result.Location;
+        }
 
         // Find the user by ID
         const user = await db.User.findById(req.user._id);
@@ -60,7 +64,7 @@ router.post('/newprofile', verifyToken, upload.single("image"),  async (req, res
             firstName: req.body.fName,
             lastName: req.body.lName,
             username: user.username,
-            image: result.Location,
+            image: imageUrl,
             city: req.body.city,
             state: req.body.state,
             gardeningExperience: req.body.gExperience,
